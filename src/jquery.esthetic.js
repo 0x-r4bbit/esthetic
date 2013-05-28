@@ -237,7 +237,7 @@
   // jQUERY BRIDGE
   $.fn.esthetic = function (options) {
     return this.each(function (){
-      new Esthetic(this, options);
+      $(this).data('esthetic', new Esthetic(this, options));
     });
   };
 
