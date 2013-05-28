@@ -1,8 +1,3 @@
-/* Esthetic Appeal
- * @author: Johannes Tröger
- * @version: 0.1.0 (alpha)
- */
-
 (function ($, window, undefined){
   'use strict';
 
