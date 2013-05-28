@@ -7,7 +7,7 @@
   },
   "homepage": "https://github.com/johannestroeger/esthetic",
   "version": "0.0.1--snapshot",
-  "licenses" : [
+  "licenses": [
     {
       "type": "WTFPL",
       "url": "http://www.wtfpl.net/"
@@ -18,9 +18,9 @@
     "grunt-cli": "~0.1.7",
     "grunt-contrib-jshint": "~0.4.3",
     "grunt-contrib-concat": "~0.3.0",
-    "grunt-contrib-uglify": "~0.2.0"
+    "grunt-contrib-uglify": "~0.2.0",
+    "grunt-contrib-clean": "~0.4.1"
   },
-
   "scripts": {
     "test": "grunt test"
   }
