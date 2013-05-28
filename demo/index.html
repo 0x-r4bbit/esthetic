@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>jQuery Boilerplate</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="../dist/jquery.esthetic.js"></script>
+  </head>
+  <body>
+    <form action="">
+      <div class="esthetic-select">
+        <select name="select">
+          <option value="A">An Option </option>
+          <option value="B">Another Option</option>
+        </select>
+      </div>
+      <button type="submit">Submit</button>
+    </form>
+    <script>
+      $(function() {
+        $('.esthetic-select').esthetic();
+      });
+    </script>
+  </body>
+</html>
