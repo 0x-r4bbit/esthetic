@@ -100,7 +100,8 @@
 
         _this.$select
           .find('option[value="' + value + '"]')
-          .prop('selected', true);
+          .prop('selected', true)
+          .change();
 
         _this.$trigger.text($this.text());
       }
