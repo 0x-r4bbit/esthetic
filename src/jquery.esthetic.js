@@ -9,47 +9,59 @@
 
   var defaults = {
     'cssClasses': {
-      'btn':      'esthetic-trigger',
-      'item':     'esthetic-item',
+      'btn': 'esthetic-trigger',
+      'item': 'esthetic-item',
       'selected': 'esthetic-item-selected',
-      'list':     'esthetic-list',
-      'input':    'esthetic-input'
+      'list': 'esthetic-list',
+      'input': 'esthetic-input',
+      'wrap': 'esthetic-select'
     },
     'events': ['touchstart', 'mousedown', 'focusin'/*, 'keydown'*/],
     'hidden': 'hidden'
   };
 
   // Esthetic constructor
-  function Esthetic (elm, settings){
+  function Esthetic (select, settings){
+
     $.extend(this, {
-      options: defaults,
+      options: $.extend({}, defaults, settings),
       isVisible: false,
-      $elm: $(elm),
+      select: select,
+      $select: $(select),
       id: unique++, // increase and set Instance ID
       onCreate: function () {},
       onChange: function () {},
       onUpdate: function () {}
     }, settings);
 
-    // initiate parser
-    this.select = this.$elm.find('select').detach().get(0);
-    this.List   = new EstheticList(this.select, this.options);
+    this.initialize();
+  }
 
-    elm.innerHTML += ''+
+  Esthetic.prototype.initialize = function (update) {
+    // initiate parser
+    this.List = new EstheticList(this.select, this.options);
+    this.$elm = $('<div class="' + this.options.cssClasses.wrap + '" />');
+    this.$elm.append('' +
       '<button class="' + this.options.cssClasses.btn + '">' +
       '  <span>' + this.List.selected.text + '</span>' +
       '</button>' +
-      '<div class="' + this.options.cssClasses.list + '"></div>' +
-      '<input type="hidden" class="' + this.options.cssClasses.input + '" name="'+ this.select.name + '" value="' +  this.select.value + '">';
+      '<div class="' + this.options.cssClasses.list + '"></div>');
 
     this.$trigger = this.$elm.find('.' + this.options.cssClasses.btn);
-    this.$input   = this.$elm.find('.' + this.options.cssClasses.input);
     this.$list    = this.$elm.find('.' + this.options.cssClasses.list);
 
     this.eventStream();
     this.onCreate();
-    stack.push(this);
-  }
+
+
+    if(update) {
+      this.$select.next().remove();
+    } else {
+      stack.push(this);
+    }
+
+    this.$select.after(this.$elm);
+  };
 
   Esthetic.prototype.eventStream = function () {
     var _this = this;
@@ -57,7 +69,7 @@
     var triggers = objToArr(_this.options.cssClasses, '.');
     var events   = this.options.events;
 
-    this.$elm.on(events.join(' '), triggers.join(', '), function(e) {
+    _this.$elm.on(events.join(' '), triggers.join(', '), function(e) {
 
       e.preventDefault();
       e.stopPropagation();
@@ -82,18 +94,28 @@
       }
 
       if($this.hasClass(_this.options.cssClasses.item)) {
+        var value = $this.find('button').attr('data-esthetic-val');
+
+        _this.List.updateSelected(value);
+
+        _this.$select
+          .find('option[value="' + value + '"]')
+          .prop('selected', true);
+
         _this.$trigger.text($this.text());
-        _this.$input.attr('value', $this.find('button').attr('value'));
-        _this.List.updateSelected($this.find('button').attr('value'));
       }
 
     });
   };
 
   Esthetic.prototype.toggle = function(id) {
-    var itemId = (typeof(id) === undefined) ? null : id;
+    if(typeof(id) === 'number') {
+      stack[id].show();
+      return;
+    }
+
     $.map(stack, function(item){
-      item[(item.id === itemId) ? 'show': 'hide']();
+      item.hide();
     });
   };
 
@@ -107,12 +129,16 @@
     this.$elm.find('ul').eq(0).attr('hidden', false);
   };
 
+  Esthetic.prototype.update = function() {
+    this.initialize(true);
+  };
+
   function EstheticList (select, options) {
-    this.options  = options;
-    this.select   = select;
+    this.options = options;
     this.selected = null;
-    this.grpIdx   = 0;
-    this.parsed   = this.parse();
+    this.grpIdx = 0;
+    this.parsed = this.parse(select);
+    this.html = '';
 
     return this;
   }
@@ -121,15 +147,27 @@
     for(var i=0;i<this.parsed.length;i++) {
       this.parsed[i].selected = (this.parsed[i].value === value);
     }
+    this.toHtml(true);
   };
 
-  EstheticList.prototype.toHtml = function () {
+  EstheticList.prototype.toHtml = function (refresh) {
+
+    // caching if needed
+    if(this.html.length && !refresh) {
+      return this.html;
+    }
+
     var html = '', list = this.parsed, cssClasses = this.options.cssClasses;
 
     var chunk = function(item) {
       return '' +
-        '<li class="' + cssClasses.item + ' ' + ((item.selected) ? cssClasses.selected : '') + '">' +
-        ' <button value="' + item.value + '">' + item.text + '</button>' +
+        '<li ' +
+        ' class="' + cssClasses.item + ' ' + ((item.selected) ? cssClasses.selected : '') + '" ' +
+        '">' +
+        ' <button' +
+        ' data-esthetic-val="' + item.value + '"' +
+        '   value="' + item.value + '">' + item.text +
+        '</button>' +
         '</li>';
     };
 
@@ -146,13 +184,15 @@
         html += chunk(list[i]);
       }
     }
-    return '<ul hidden>' + html + '</ul>';
+    this.html = '<ul hidden>' + html + '</ul>';
+
+    return this.html;
   };
 
-  EstheticList.prototype.parse = function() {
+  EstheticList.prototype.parse = function(select) {
     this.parsed = [];
-    for(var i = 0; i < this.select.childNodes.length; i++) {
-      var node = this.select.childNodes[i];
+    for(var i = 0; i < select.childNodes.length; i++) {
+      var node = select.childNodes[i];
       if (node.nodeName.toUpperCase() === 'OPTGROUP') {
         this.addGroup(node);
       } else if(node.nodeName.toUpperCase() === 'OPTION') {
@@ -197,7 +237,7 @@
   // jQUERY BRIDGE
   $.fn.esthetic = function (options) {
     return this.each(function (){
-      return new Esthetic(this, options);
+      new Esthetic(this, options);
     });
   };
 

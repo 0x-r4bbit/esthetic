@@ -1,24 +1,32 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>jQuery Boilerplate</title>
+    <title>Esthetic Appeal</title>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script src="../dist/jquery.esthetic.js"></script>
+    <script src="../src/jquery.esthetic.js"></script>
   </head>
   <body>
-    <form action="">
-      <div class="esthetic-select">
-        <select name="select">
-          <option value="A">An Option </option>
+    <form action="#">
+      <div class="">
+        <select name="select" class="esthetic">
+          <option value="A" selected="selected">An Option </option>
           <option value="B">Another Option</option>
         </select>
       </div>
+
       <button type="submit">Submit</button>
     </form>
+    <button class="add">ADD option</button>
     <script>
-      $(function() {
-        $('.esthetic-select').esthetic();
-      });
+      $(document).ready(function () {
+        window.instanze = $('.esthetic').esthetic();
+        // window.instanze = new Esthetic(.get(0));
+        // var itzy = 0;
+        // $('.add').on('click', function () {
+        //   var newOpt = itzy++;
+        //   $('.esthetic').append($('<option value=" ' + (newOpt) + '">Added' + newOpt + '</option>'));
+        // });
+      })
     </script>
   </body>
 </html>
